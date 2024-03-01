@@ -28,18 +28,36 @@ def fullAdder(a, b, c, soma, carry):
 
     @always_comb
     def comb():
-        carry.next = s2 | s3 # (4)
+        carry.next = s2 or s3 # (4)
     return instances()
 
 @block
 def adder2bits(x, y, soma, carry):
+    c1 = Signal(bool(0))
+    c2 = Signal(bool(0))
+    c3 = Signal(bool(0))
+
+    full_1 = fullAdder(x[0], y[0], c1, soma[0], c2)
+    full_2 = fullAdder(x[1], y[1], c2, soma[1], c3)
+
+    @always_comb
+    def comb():
+        carry.next = c3
+
     return instances()
 
 
 @block
 def adder(x, y, soma, carry):
+    largura_bits = len(x)
+    bits_carry = [Signal(bool(0)) for _ in range(largura_bits + 1)]
+
+    bits_soma = [fullAdder(x[i], y[i], bits_carry[i], soma[i], bits_carry[i + 1]) for i in range(largura_bits)]
+
     @always_comb
     def comb():
-        pass
+        carry.next = bits_carry[-1]
 
     return instances()
+
+
